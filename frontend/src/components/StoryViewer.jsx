@@ -1,9 +1,40 @@
 import { BadgeCheck, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const StoryViewer = ({ viewStory, setViewStory }) => {
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let timer, progressInterval;
+
+    if (viewStory && viewStory.media_type !== "video") {
+      setProgress(0);
+
+      const duration = 10000;
+      const setTime = 100;
+      let elapsed = 0;
+
+      progressInterval = setInterval(() => {
+        elapsed += setTime;
+        setProgress((elapsed / duration) * 100);
+      }, setTime);
+
+      timer = setTimeout(() => {
+        setViewStory(null);
+      }, duration);
+    }
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(progressInterval);
+    };
+  }, [viewStory, setViewStory]);
+
   const handleClose = () => {
     setViewStory(null);
   };
+
+  if (!viewStory) return null;
 
   const renderContent = () => {
     switch (viewStory.media_type) {
@@ -51,12 +82,15 @@ const StoryViewer = ({ viewStory, setViewStory }) => {
       <div className="absolute top-0 left-0 w-full h-1 bg-gray-700">
         <div
           className="h-full bg-white transition-all duration-100 linear"
-          style={{ width: "50%" }}
+          style={{ width: `${progress}%` }}
         ></div>
       </div>
 
       {/* user info - top left section  */}
-      <div className="absolute top-4 left-4 flex items-center space-x-3 p-2 px-4 sm:p-4 sm:px-8 backdrop-blur-2xl rounded bg-black/50">
+      <div
+        className="absolute top-4 left-4 flex items-center space-x-3 p-2 px-4 sm:p-4 sm:px-8 
+        backdrop-blur-2xl rounded bg-black/50"
+      >
         <img
           src={viewStory.user?.profile_picture}
           alt=""
